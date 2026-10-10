@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>YouTube-linkkien kerääjä</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main>
+  <h1>YouTube-linkkien kerääjä</h1>
+
+  <form id="form" class="row url-row" autocomplete="off">
+    <input id="url" type="url" inputmode="url" placeholder="https://www.youtube.com/@kanava" aria-label="YouTube-kanavan osoite" spellcheck="false" autocapitalize="off">
+    <button id="collect" class="primary" type="submit">Kerää videot</button>
+    <button id="cancel" type="button" disabled>Peruuta</button>
+  </form>
+
+  <div class="options">
+    <fieldset>
+      <legend>Haettava sisältö</legend>
+      <label><input type="checkbox" id="k-video" checked> Kaikki videot</label>
+      <label><input type="checkbox" id="k-short"> Shorts-videot</label>
+      <label><input type="checkbox" id="k-live"> Livelähetykset</label>
+    </fieldset>
+    <fieldset>
+      <legend>Näkymä ja haku</legend>
+      <label><input type="radio" name="mode" id="m-links"> Vain linkit</label>
+      <label><input type="radio" name="mode" id="m-details" checked> Linkit, otsikot ja julkaisupäivät</label>
+      <label title="YouTube ei anna päivää kanavalistauksessa. Tämä tekee yhden pyynnön per video ja voi kestää pitkään."><input type="checkbox" id="exact"> Hae tarkat julkaisupäivät (hidas)</label>
+      <label class="inline">Enintään / välilehti
+        <input type="number" id="limit" min="0" max="100000" step="1" value="0" inputmode="numeric"> <small>(0 = ei rajaa)</small>
+      </label>
+    </fieldset>
+  </div>
+
+  <div id="progress" class="progress" role="progressbar" aria-label="Haun eteneminen"><div></div></div>
+  <div class="status-row">
+    <span id="status" role="status" aria-live="polite">Syötä kanavan osoite ja paina ”Kerää videot”.</span>
+    <strong id="count">Löydetty: 0</strong>
+  </div>
+
+  <div id="banner" class="banner" hidden>
+    <div id="banner-text"></div>
+    <button id="retry" type="button">Yritä uudelleen</button>
+  </div>
+
+  <div class="row filters">
+    <input id="filter" type="search" placeholder="Hae otsikosta…" aria-label="Hae otsikosta">
+    <select id="kind-filter" aria-label="Rajaa tyypin mukaan">
+      <option value="">Kaikki tyypit</option>
+      <option value="video">Videot</option>
+      <option value="short">Shorts</option>
+      <option value="live">Livelähetykset</option>
+    </select>
+    <select id="sort" aria-label="Järjestys">
+      <option value="found">Löytöjärjestys</option>
+      <option value="title">Otsikko A–Ö</option>
+      <option value="date-desc">Päivä, uusin ensin</option>
+      <option value="date-asc">Päivä, vanhin ensin</option>
+      <option value="dur-desc">Kesto, pisin ensin</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table id="table" class="details">
+      <thead><tr>
+        <th class="c-title">Otsikko</th><th class="c-url">URL</th><th class="c-date">Julkaisupäivä</th>
+        <th class="c-dur">Kesto</th><th class="c-kind">Tyyppi</th><th class="c-channel">Kanava</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p id="empty" class="empty">Ei tuloksia.</p>
+    <button id="more" type="button" hidden>Näytä lisää</button>
+  </div>
+
+  <div class="actions">
+    <button id="copy" type="button" disabled>Kopioi kaikki linkit</button>
+    <button id="txt" type="button" disabled>Vie TXT</button>
+    <button id="csv" type="button" disabled>Vie CSV</button>
+    <button id="open" type="button" disabled>Avaa linkki valitulle videolle</button>
+  </div>
+  <p class="note">Kopiointi ja vienti koskevat näkyvillä olevia rivejä (suodatin huomioidaan). Valitse rivi napauttamalla.</p>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>

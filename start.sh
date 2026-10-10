@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
-# Käynnistää sovelluksen Linuxilla ja macOS:llä. Luo tarvittaessa .venv-ympäristön.
+# Käynnistää selainversion (Linux / macOS). Luo tarvittaessa .venv-ympäristön.
+# Lisäparametrit välittyvät eteenpäin, esim. ./start.sh --host 0.0.0.0 --port 8765
 set -e
 cd "$(dirname "$0")"
-if [ ! -d .venv ]; then
-  python3 -m venv .venv
-fi
+[ -d .venv ] || python3 -m venv .venv
 . .venv/bin/activate
 pip install --quiet --upgrade pip
 pip install --quiet -r requirements.txt
-exec python -m ytlinks
+exec python -m ytlinks.web "$@"

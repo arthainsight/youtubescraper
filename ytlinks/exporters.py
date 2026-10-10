@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import csv
+import io
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -9,6 +10,11 @@ from .models import Video
 
 CSV_HEADER_FULL = ["title", "url", "video_id", "upload_date", "duration_seconds", "channel", "type"]
 CSV_HEADER_LINKS = ["url"]
+
+
+def _csv_safe(text: str) -> str:
+    """Estää taulukkolaskennan kaavainjektion (=, +, -, @ alussa) lisäämällä heittomerkin."""
+    return "'" + text if text[:1] in ("=", "+", "-", "@", "\t", "\r") else text
 
 
 def _clean(text: str) -> str:
@@ -33,18 +39,32 @@ def export_txt(path: str | Path, videos: Iterable[Video], links_only: bool = Tru
     return len(videos)
 
 
-def export_csv(path: str | Path, videos: Iterable[Video], links_only: bool = False) -> int:
-    """Kirjoittaa CSV:n UTF-8-BOM-koodauksella, jotta Excel näyttää ääkköset oikein."""
-    videos = list(videos)
-    with open(path, "w", encoding="utf-8-sig", newline="") as f:
-        w = csv.writer(f)
+def write_csv(f, videos: Iterable[Video], links_only: bool = False) -> int:
+    """Kirjoittaa CSV:n tekstitiedostoon/-puskuriin (avattu newline=''-asetuksella)."""
+    w = csv.writer(f)
+    n = 0
+    if links_only:
+        w.writerow(CSV_HEADER_LINKS)
+    else:
+        w.writerow(CSV_HEADER_FULL)
+    for v in videos:
         if links_only:
-            w.writerow(CSV_HEADER_LINKS)
-            for v in videos:
-                w.writerow([v.url])
+            w.writerow([v.url])
         else:
-            w.writerow(CSV_HEADER_FULL)
-            for v in videos:
-                w.writerow([v.title, v.url, v.video_id, v.upload_date,
-                            "" if v.duration is None else v.duration, v.channel, v.kind.value])
+            w.writerow([_csv_safe(v.title), v.url, v.video_id, v.upload_date,
+                        "" if v.duration is None else v.duration, _csv_safe(v.channel), v.kind.value])
+        n += 1
+    return n
+
+
+def csv_bytes(videos: Iterable[Video], links_only: bool = False) -> bytes:
+    """CSV UTF-8-BOM-koodattuna tavuina (Excel näyttää ääkköset oikein)."""
+    buf = io.StringIO(newline="")
+    write_csv(buf, videos, links_only)
+    return buf.getvalue().encode("utf-8-sig")
+
+
+def export_csv(path: str | Path, videos: Iterable[Video], links_only: bool = False) -> int:
+    videos = list(videos)
+    Path(path).write_bytes(csv_bytes(videos, links_only))
     return len(videos)
