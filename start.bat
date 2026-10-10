@@ -14,20 +14,25 @@ if not defined PY (
 echo Kaytetaan: %PY%
 %PY% --version || goto :fail
 
-if not exist ".venv\Scripts\python.exe" (
+set "VPY=.venv\Scripts\python.exe"
+if not exist "%VPY%" (
   if exist ".venv" rmdir /s /q ".venv"
   echo Luodaan virtuaaliympariston .venv ...
   %PY% -m venv .venv || goto :fail
 )
-call ".venv\Scripts\activate.bat" || goto :fail
+if not exist "%VPY%" (
+  echo VIRHE: .venv:n luonti epaonnistui.
+  goto :fail
+)
+"%VPY%" --version
 
 echo Asennetaan riippuvuudet (ensimmainen kerta kestaa hetken)...
-python -m pip install --upgrade pip
-pip install -r requirements.txt || goto :fail
+"%VPY%" -m pip install --upgrade pip
+"%VPY%" -m pip install -r requirements.txt || goto :fail
 
 echo.
 echo Kaynnistetaan... (lopetus: Ctrl+C)
-python -m ytlinks.web %*
+"%VPY%" -m ytlinks.web %*
 if errorlevel 1 goto :fail
 goto :eof
 
